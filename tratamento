@@ -1,0 +1,58 @@
+#Como remover dados, tanto linhas quanto colunas que não tem sentido estarem ali pq vc não vai usar ou pq aquele dado não será analisado
+#Como normalizar campos de texto para os dados, manter o mesmo padrão nas tabelas, tratar dados nulos de diversas maneiras
+
+import pandas as pd
+
+df = pd.read_csv('dados.csv')
+
+pd.set_option('display.width', None)    #mostrar a coluna inteira, sem encurtar campos
+print(df.head())
+
+#Remover dados - inplace executa o comando em cima do seu data, sem precisar criar um novo para salvar a mudança
+df.drop(labels='pais', axis=1, inplace=True) #Coluna
+df.drop(labels=2, axis=0, inplace=True) #Linha
+
+#Normalizar campos de texto - verificar os textos e definir um padrão
+df['nome'] = df['nome'].str.title() #campo = campo.texto.primeira letra
+df['endereco'] = df['endereco'].str.lower() #minúscula
+df['estado'] = df['estado'].str.strip().str.upper() #maiúscula
+
+#Converter tipos de dados
+df['idade'] = df['idade'].astype(int)
+
+print(df.head()) #verificar como tá indo
+
+#Tratar valores nulos (ausentes)
+df_fillna = df.fillna(0)    #Substituir valores nulos por 0
+df_dropna = df.dropna()     #Remover registro com valores nulos
+df_dropna4 = df.dropna(thresh=4)    #Manter registro com no mínimo 4 valores não nulos
+
+print('Valores nulos:\n', df.isnull().sum()) #se eu coloco para ver a quantidade de registros nulos (sum), ele vai mostrar em cada um dos campos os valores nulos, se eu faço .sum novamente ele pega tudo isso e soma
+print('Qtd de registros nulos com fillna:', df_fillna.isnull().sum().sum()) #soma dos registros = 0
+print('Qtd de registros nulos com dropna:', df_dropna.isnull().sum().sum()) #soma dos registros = 0 pois removeu todos
+print('Qtd de registros nulos com dropna4:', df_dropna4.isnull().sum().sum()) #evita de analisar dados com muitos dados nulos
+print('Qtd de registros nulos com CPF:', df.isnull().sum().sum()) #campo de identificador nulo
+
+df.fillna(value={'estado': 'Desconhecido'}, inplace=True)           #todo campo estado que for nulo ele vai substituir por desconhecido diretamente no df
+df['endereco'] = df['endereco'].fillna('Endereço não informado')    #todo campo endereço que for nulo vai retornar não informado
+df['idade_corrigida'] = df['idade'].fillna(df['idade'].mean())      #colocar média de idade - numa análise de dados, esse valor não vai afetar os demais campos
+
+#Tratar formato dos dados
+df['data_corrigida'] = pd.to_datetime(df['data'], format='%d/%m/%Y', errors='coerce')   #erro gera valor nulo
+
+#Tratar dados duplicados - primeiro deletar, tratar os dados iguais e no final remover os duplicados
+print('Qtd registros atual:', df.shape[0]) #linha 0 coluna 1
+df.drop_duplicates()    #remover todas as duplicadas
+df.drop_duplicates(subset='cpf', inplace=True)  #remover apenas o cpf duplicado
+print('Qtd registros removendo as duplicatas:', len(df))    #len mostra número de linhas
+
+print('Dados Limpos:\n', df)
+
+#Salvar dataframe
+df['data'] = df['data_corrigida']
+df['idade'] = df['idade_corrigida']
+
+df_salvar = df[['nome', 'cpf', 'idade', 'date', 'endereco', 'estado']]
+df_salvar.to_csv('dados_limpeza.csv', index=False)
+
+print('Novo DataFrame: \n', pd.read_csv('dados_limpeza.csv'))
