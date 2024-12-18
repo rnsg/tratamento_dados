@@ -1,0 +1,32 @@
+import pandas as pd
+
+df = pd.read_csv('dados.csv')
+
+#Verificar os primeiros registros - head/tail verificar se houve alguma mudança, se começou sendo alimentado de uma maneira e depois de outra, sem tratamento - to string mostra tud em uma linha
+print(df.head().to_string())
+print(df.tail().to_string())
+
+#Verificar quantidade de linhas e colunas
+print('Qtd: ', df.shape)
+
+#Verificar os tipos de dados
+print('Tipagem:\n', df.dtypes)
+
+#Checar valores nulos
+print('Valores nulos:\n', df.isnull().sum())
+
+#Função para calcular o cubo de um número
+def eleva_cubo(x):
+    return x ** 3
+
+#Expressão lambda para calcular o cubo de um número - recebe o valor lambda e eleva
+eleva_cubo_lambda = lambda x: x ** 3
+
+print(eleva_cubo(2))
+print(eleva_cubo_lambda(2))
+
+df = pd.DataFrame({'numeros': [1, 2, 3, 4, 5, 10]}) #aplicação prática
+
+df['cubo_funcao'] = df['numeros'].apply(eleva_cubo)
+df['cubo_lambda'] = df['numeros'].apply(lambda x: x ** 3) #operações simples - fazer algo que na função levaria 3 a 5 linhas
+print(df)
